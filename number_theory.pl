@@ -1,6 +1,8 @@
 % Number theory axioms
-:- use_module(library(debug)).
 :- use_module(library(clpz)).
+
+positive_integer(N) :-
+    N #>= 0.
 
 is_even(A) :-
     0 #= A mod 2.
@@ -26,6 +28,17 @@ divmod(A, B, Q, R) :-
     R #>= 0,
     R #< B,
     A #= (B * Q) + R.
+
+% gcd max(D) where D|A and D|B
+gcd(A, B, D) :-
+    A #> 0,
+    B #> 0,
+    D #> 0,
+    D #=< A,
+    D #=< B,
+    A #= _ * D,
+    B #= _ * D,
+    once(labeling([max(D)], [D])).
 
 % find the integer sqrt of N
 integer_sqrt(N, I) :-
@@ -61,9 +74,6 @@ prime(A) :-
     A > 3,
     divides(2, A) -> false ; prime_(3,A).
 
-positive_integer(N) :-
-    N #> 0.
-
 % https://projecteuler.net/problem=757
 % N = 1764, stealthy(A, B, C, D, N), labeling([min(D+C)], [A, B, C, D]).
 % N = 36, A = 4, stealthy(A, B, C, D, N).
@@ -92,5 +102,3 @@ stealthy(A, B, C, D, N) :-
     A + B #= C + D + 1.
 
 % stealthy(4, 9, C, D).
-
-
