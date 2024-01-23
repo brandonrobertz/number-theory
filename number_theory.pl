@@ -1,5 +1,6 @@
 % Number theory axioms
 :- use_module(library(clpz)).
+:- use_module(library(debug)).
 
 positive_integer(N) :-
     N #>= 0.
@@ -30,6 +31,7 @@ divmod(A, B, Q, R) :-
     A #= (B * Q) + R.
 
 % gcd max(D) where D|A and D|B
+% This is a purely definitional one based on relative proportions
 gcd(A, B, D) :-
     A #> 0,
     B #> 0,
@@ -39,6 +41,60 @@ gcd(A, B, D) :-
     A #= _ * D,
     B #= _ * D,
     once(labeling([max(D)], [D])).
+
+% gcd can also be defined as:
+%   min(D) where D = A*X + B*Y
+% This is useful in situations where division
+% is difficult to use
+bezout_gcd(A, B, D) :-
+    A #> 0,
+    B #> 0,
+    D #> 0,
+    D #=< A,
+    D #=< B,
+    D #= (A * _) + (B * _),
+    once(labeling([min(D)], [D])).
+
+% bezout identity of the d = gcd(a, b) is the
+% non unique linear combination: d = a*x + b*y
+%
+% In order to use you must put constraints on X and Y.
+%
+% This example finds identities in descending X in bounds D^2 for X and Y:
+%   Y #< D^2, X #< D^2, bezout_identity(60, 42, D, X, Y), labeling([max(X)], [X, Y]).
+bezout_identity(A, B, D, X, Y) :-
+    positive_integer(A),
+    positive_integer(B),
+    gcd(A, B, D),
+    (A * X) + (B * Y) #= D.
+
+% euclidean algorithm for finding the D = GCD(A, B)
+%
+% From Euclid's Elements Book VII
+%
+% "Beginning with two numbers, the smaller, whichever it is, is
+%  repeatedly subtracted from the larger until a single number is left."
+%
+%  gcd(85, 54)
+%
+%  Can be found using the recursive steps:
+%    85 – (2 * 31) =23
+%    31 – 23 = 8
+%    23 – (2 * 8) = 7
+%    8 – 7 = 1
+%
+% More info: http://aleph0.clarku.edu/~djoyce/java/elements/bookVII/propVII1.html
+euclidean_gcd(A, B, D) :-
+    write('gcd('), write(A), write(', '), write(B), write(')\n'),
+    A #> 0,
+    B #> 0,
+    D #> 0,
+    A1 #= max(A, B),
+    B1 #= min(A, B),
+    % a1 – m1 a2 = a3
+    M1 #> 0,
+    A2 #= A1 - (M1 * B1),
+    euclidean_gcd(A2, A1, D).
 
 % find the integer sqrt of N
 integer_sqrt(N, I) :-
